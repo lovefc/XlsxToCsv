@@ -1,0 +1,24 @@
+{
+    "name": "lovefc/xlsxtocsv",
+    "keywords": [
+        "php",
+        "xlsxtocsv",
+		"xlsx转csv"
+    ],	
+    "description": "快速将xlsx文件转成csv文件",
+    "authors": [
+        {
+            "name": "lovefc",
+            "email": "lovefc@88.com",
+            "homepage": "https://lovefc.cn/"
+        }
+    ],
+    "homepage": "https://github.com/lovefc/XlsxToCsv.git",
+    "license": "MIT",
+    "require": {
+        "php": ">=7.0.0"
+    },
+	"autoload": {
+	   "psr-4": { "lovefc\\": "src"}
+	}
+}
