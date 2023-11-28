@@ -23,7 +23,7 @@ composer require --dev lovefc/xlsxtocsv
 ```
 <?php
 
-require dirname(__DIR__) . '/vendor/autoload.php';
+require __DIR__ . '/vendor/autoload.php';
 
 $config = ['path' => 'D:/xlsx', 'output' => 'D:/csv'];
 

@@ -48,17 +48,17 @@ class XlsxToCsv
 			die('Xlswriter is not installed.');
 		}
 		$path = isset($config['path']) ? realpath($config['path']) : '';
-		$this->writeNum = (int) isset($config['writeNum']) ? $config['writeNum'] : 5000;
+		$this->writeNum = isset($config['writeNum']) ? intval($config['writeNum']) : 5000;
 		$callback = function ($row, $sheetName) {
 			$text = implode(',', $row);
 			return $text;
 		};
-		$this->callBack = isset($config['callBack']) ? $config['callBack'] : $callback;
-		$this->type = (array)isset($config['type']) ? $config['type'] : '';
-		$this->reserves = (array) isset($config['reserves']) ? $config['reserves'] : [];
-		$this->showlog = (bool) isset($config['showLog']) ? $config['showLog'] : true;
-		$this->outputDir = isset($config['output']) ? $config['output'] : '';
-		$this->autoWrite = isset($config['auto']) ? $config['auto'] : true;
+		$this->callBack = $config['callBack'] ?? $callback;
+		$this->type = $config['type'] ?? [];
+		$this->reserves = $config['reserves'] ?? [];
+		$this->showlog = $config['showLog'] ?? true;
+		$this->outputDir = $config['output'] ?? '';
+		$this->autoWrite = $config['auto'] ?? true;
 		if (is_dir($path)) {
 			$this->workDir = $path;
 		}
@@ -189,7 +189,7 @@ class XlsxToCsv
 			foreach ($sheetList as $sheetName) {
 				$newcsv = $directory . '/' . $sheetName . '.csv';
 				$sheetData = $excel->openSheet($sheetName);
-				if ($this->type) {
+				if (!empty($this->type)) {
 					$sheetData->setType($this->type);
 				}
 				if ($this->showlog === true) {
