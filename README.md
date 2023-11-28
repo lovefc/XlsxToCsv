@@ -6,13 +6,24 @@
 ##
 
 ### 安装
+本库依赖php扩展xlswriter
+首先要先安装扩展xlswriter
+
+```
+https://xlswriter-docs.viest.me/zh-cn/an-zhuang
+```
+安装完成之后，安装本库
 ```
 composer require --dev lovefc/xlsxtocsv
 ```
 
 ## 使用方法
+创建使用文件run.php
 
 ```
+<?php
+
+require dirname(__DIR__) . '/vendor/autoload.php';
 
 $config = ['path' => 'D:/xlsx', 'output' => 'D:/csv'];
 
@@ -20,6 +31,12 @@ $obj = new lovefc\XlsxToCsv($config);
 
 $obj->run();
 
+```
+接着再去用命令行执行本文件
+
+
+```
+php run.php
 ```
 
 ## config配置
