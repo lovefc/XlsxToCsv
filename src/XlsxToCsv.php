@@ -6,7 +6,7 @@ namespace lovefc;
  * @Author       : lovefc
  * @Date         : 2023-11-25 12:38:43
  * @LastEditors  : lovefc
- * @LastEditTime : 2023-11-28 17:18:02
+ * @LastEditTime : 2024-01-02 15:20:39
  * @Description  : 
  * 
  * Copyright (c) 2023 by lovefc, All Rights Reserved. 
@@ -20,6 +20,8 @@ class XlsxToCsv
 	private $workFile;
 
 	private $outputDir;
+
+	private $outputFile;
 
 	private $writeNum;
 
@@ -58,6 +60,7 @@ class XlsxToCsv
 		$this->reserves = $config['reserves'] ?? [];
 		$this->showlog = $config['showLog'] ?? true;
 		$this->outputDir = $config['output'] ?? '';
+		$this->outputFile = $config['outputFile'] ?? '';
 		$this->autoWrite = $config['auto'] ?? true;
 		if (is_dir($path)) {
 			$this->workDir = $path;
@@ -136,8 +139,16 @@ class XlsxToCsv
 				die('There are no files to process in the current directory.');
 			}
 			foreach ($res as $v) {
-				$file =  basename($v);
-				$this->saveExcelToCsv($file);
+				$pathInfo = pathinfo($v);
+				$chree = str_replace($this->workDir, '', $pathInfo['dirname']);
+				$name = $pathInfo['basename'];
+				$file =  $chree . '/' . $pathInfo['basename'];
+				if ($this->showlog === true) {
+					echo 'File Name:' . $file . PHP_EOL;
+				}
+				if (substr($name, 0, 2) != '~$') {
+					$this->saveExcelToCsv($file);
+				}
 			}
 		}
 	}
@@ -177,17 +188,22 @@ class XlsxToCsv
 		try {
 			$excel = new \Vtiful\Kernel\Excel(['path' => $this->workDir]);
 			$sheetList = $excel->openFile($filename)->sheetList();
-			$output = !empty($this->outputDir) ? $this->outputDir : $this->workDir;
-			$directory = $output . '/' . pathinfo($filename, PATHINFO_FILENAME);
-			if ($this->createDirectory($directory) === false) {
-				die('Directory cannot be created or already exists.');
+			$sheetCount = count($sheetList);
+			if (!empty($this->outputFile)) {
+				$newcsv = $this->outputFile;
 			}
-			if ($this->showlog === true) {
-				echo 'File Name:' . $filename . PHP_EOL;
+			$output = !empty($this->outputDir) ? $this->outputDir : $this->workDir;
+			$pathInfo = pathinfo($filename);
+			$dirname  = $pathInfo['dirname'];
+			$filename  = $pathInfo['filename'];
+			$name = pathinfo($filename, PATHINFO_FILENAME);
+			$directory = $output . '/' . $dirname;
+			$newcsv = $directory . '/' . $filename . '.csv';
+			if (($this->createDirectory($directory) === false)) {
+				die('Directory cannot be created or already exists.');
 			}
 			$wcount = $this->writeNum;
 			foreach ($sheetList as $sheetName) {
-				$newcsv = $directory . '/' . $sheetName . '.csv';
 				$sheetData = $excel->openSheet($sheetName);
 				if (!empty($this->type)) {
 					$sheetData->setType($this->type);
