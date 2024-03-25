@@ -51,15 +51,29 @@ php run.php
 |  auto  |    是否自动写入csv,默认为true |
 |  callBack |    回调函数，拥有两个参数，可在里面处理自己的数组逻辑  |
 |  type |  类型转化数组 |
+|  autoDeleSourceFile  |    转化完成之后,是否自动删除源文件,默认为false |
 
 > type 类型转化，具体请参考这里：https://xlswriter-docs.viest.me/zh-cn/reader/set-type
 
 ## callBack的默认回调如下：
 ```
+// 只提取手机号
 $callback = function ($row, $sheetName) {
-     $text = implode(',', $row);
-     return $text;
- };
+    $str = implode(',', $row);
+	$pattern = '/1[0-9]\d{9}/';
+	preg_match($pattern,$str,$arr);	
+	$phone = $arr[0] ?? 0;
+	if($phone == 0){
+		return false;
+	}	
+    return $phone;
+};
+
+$config = ['path' => '/www/1.xlsx', 'outputFile' => '/www/1.csv', 'callBack'=>$callback ];
+
+$obj = new lovefc\XlsxToCsv($config);
+
+$obj->run();
  ```                    
 > row是一个读取的数组，sheetName是当前的工作表名称
 

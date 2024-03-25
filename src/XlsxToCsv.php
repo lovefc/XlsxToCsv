@@ -5,8 +5,8 @@ namespace lovefc;
 /*
  * @Author       : lovefc
  * @Date         : 2023-11-25 12:38:43
- * @LastEditors  : lovefc
- * @LastEditTime : 2024-01-02 15:20:39
+ * @LastEditors  : error: git config user.name & please set dead value or install git
+ * @LastEditTime : 2024-03-25 14:38:41
  * @Description  : 
  * 
  * Copyright (c) 2023 by lovefc, All Rights Reserved. 
@@ -35,6 +35,8 @@ class XlsxToCsv
 
 	private $autoWrite;
 
+	private $autoDeleSourceFile;
+
 	const TYPE_STRING = 0x01;    // 字符串
 
 	const TYPE_INT = 0x02;       // 整型
@@ -62,6 +64,7 @@ class XlsxToCsv
 		$this->outputDir = $config['output'] ?? '';
 		$this->outputFile = $config['outputFile'] ?? '';
 		$this->autoWrite = $config['auto'] ?? true;
+		$this->autoDeleSourceFile = $config['autoDeleSourceFile'] ?? false;
 		if (is_dir($path)) {
 			$this->workDir = $path;
 		}
@@ -71,6 +74,12 @@ class XlsxToCsv
 		}
 		if (empty($this->workDir)) {
 			die('The directory is wrong.');
+		}
+		if ($this->containsChinese($this->workDir)) {
+			$this->workDir = mb_convert_encoding($this->workDir, "GBK", "UTF-8");
+		}
+		if ($this->containsChinese($this->workFile)) {
+			$this->workFile = mb_convert_encoding($this->workFile, "GBK", "UTF-8");
 		}
 		if (!empty($this->outputDir) && (!is_dir($this->outputDir))) {
 			die('The output directory is wrong.');
@@ -147,9 +156,44 @@ class XlsxToCsv
 					echo 'File Name:' . $file . PHP_EOL;
 				}
 				if (substr($name, 0, 2) != '~$') {
-					$this->saveExcelToCsv($file);
+					$filename = $this->checkFilename($file);
+					if ($filename) {
+						$this->saveExcelToCsv($filename);
+						if ($this->autoDeleSourceFile) {
+							$this->deleFile($file);
+						}
+					}
 				}
 			}
+		}
+	}
+
+	// 检测文件名
+	public function checkFilename($filename)
+	{
+		if ($this->containsChinese($filename)) {
+			$filename = mb_convert_encoding($filename, "GBK", "UTF-8");
+		}
+		$path = $this->workDir . $filename;
+		$filename = trim($filename, '/');
+		if (is_file($path)) {
+			return $filename;
+		}
+		if ($this->showlog === true) {
+			echo 'File:' . $path . '-File does not exist,skipping automatically.' . PHP_EOL;
+		}
+		return false;
+	}
+
+	// 删除文件
+	public function deleFile($filename)
+	{
+		if ($this->containsChinese($filename)) {
+			$filename = mb_convert_encoding($filename, "GBK", "UTF-8");
+		}
+		$path = $this->workDir . $filename;
+		if (is_file($path)) {
+			unlink($path);
 		}
 	}
 
@@ -181,6 +225,12 @@ class XlsxToCsv
 			file_put_contents($newcsv, $text, FILE_APPEND);
 		}
 	}
+   
+	// 识别中文
+	private function containsChinese($string)
+	{
+		return preg_match('/[\x{4e00}-\x{9fa5}]/u', $string);
+	}
 
 	// 读取保存
 	public function saveExcelToCsv($filename, $newcsv = '')
@@ -199,6 +249,9 @@ class XlsxToCsv
 			$name = pathinfo($filename, PATHINFO_FILENAME);
 			$directory = $output . '/' . $dirname;
 			$newcsv = $directory . '/' . $filename . '.csv';
+			if ($this->containsChinese($newcsv)) {
+				$newcsv = mb_convert_encoding($newcsv, "UTF-8", "GBK");
+			}
 			if (($this->createDirectory($directory) === false)) {
 				die('Directory cannot be created or already exists.');
 			}
