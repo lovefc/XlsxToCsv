@@ -5,8 +5,8 @@ namespace lovefc;
 /*
  * @Author       : lovefc
  * @Date         : 2023-11-25 12:38:43
- * @LastEditors  : error: git config user.name & please set dead value or install git
- * @LastEditTime : 2024-03-25 14:38:41
+ * @LastEditors  : lovefc
+ * @LastEditTime : 2024-04-23 15:02:29
  * @Description  : 
  * 
  * Copyright (c) 2023 by lovefc, All Rights Reserved. 
@@ -225,7 +225,7 @@ class XlsxToCsv
 			file_put_contents($newcsv, $text, FILE_APPEND);
 		}
 	}
-   
+
 	// 识别中文
 	private function containsChinese($string)
 	{
@@ -239,9 +239,6 @@ class XlsxToCsv
 			$excel = new \Vtiful\Kernel\Excel(['path' => $this->workDir]);
 			$sheetList = $excel->openFile($filename)->sheetList();
 			$sheetCount = count($sheetList);
-			if (!empty($this->outputFile)) {
-				$newcsv = $this->outputFile;
-			}
 			$output = !empty($this->outputDir) ? $this->outputDir : $this->workDir;
 			$pathInfo = pathinfo($filename);
 			$dirname  = $pathInfo['dirname'];
@@ -251,6 +248,12 @@ class XlsxToCsv
 			$newcsv = $directory . '/' . $filename . '.csv';
 			if ($this->containsChinese($newcsv)) {
 				$newcsv = mb_convert_encoding($newcsv, "UTF-8", "GBK");
+			}
+			if (!empty($this->outputFile)) {
+				$newcsv2 = $this->outputFile;
+				if (is_dir(dirname($newcsv2))) {
+					$newcsv = $newcsv2;
+				}
 			}
 			if (($this->createDirectory($directory) === false)) {
 				die('Directory cannot be created or already exists.');
