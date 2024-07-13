@@ -6,7 +6,7 @@ namespace lovefc;
  * @Author       : lovefc
  * @Date         : 2023-11-25 12:38:43
  * @LastEditors  : lovefc
- * @LastEditTime : 2024-04-23 15:02:29
+ * @LastEditTime : 2024-07-13 16:13:19
  * @Description  : 
  * 
  * Copyright (c) 2023 by lovefc, All Rights Reserved. 
@@ -36,6 +36,8 @@ class XlsxToCsv
 	private $autoWrite;
 
 	private $autoDeleSourceFile;
+	
+	private $divide; // 是否按照薄来划分
 
 	const TYPE_STRING = 0x01;    // 字符串
 
@@ -65,6 +67,7 @@ class XlsxToCsv
 		$this->outputFile = $config['outputFile'] ?? '';
 		$this->autoWrite = $config['auto'] ?? true;
 		$this->autoDeleSourceFile = $config['autoDeleSourceFile'] ?? false;
+		$this->divide = $config['divide'] ?? false;
 		if (is_dir($path)) {
 			$this->workDir = $path;
 		}
@@ -244,8 +247,12 @@ class XlsxToCsv
 			$dirname  = $pathInfo['dirname'];
 			$filename  = $pathInfo['filename'];
 			$name = pathinfo($filename, PATHINFO_FILENAME);
-			$directory = $output . '/' . $dirname;
-			$newcsv = $directory . '/' . $filename . '.csv';
+			$directory = ($dirname!= '.') ? $output . '/' . $dirname : $output;
+			if($this->divide == false){
+			    $newcsv = $directory . '/' . $filename . '.csv';
+			}else{
+				$newcsv = $directory;
+			}
 			if ($this->containsChinese($newcsv)) {
 				$newcsv = mb_convert_encoding($newcsv, "UTF-8", "GBK");
 			}
@@ -254,7 +261,7 @@ class XlsxToCsv
 				if (is_dir(dirname($newcsv2))) {
 					$newcsv = $newcsv2;
 				}
-			}
+			}	
 			if (($this->createDirectory($directory) === false)) {
 				die('Directory cannot be created or already exists.');
 			}
@@ -268,7 +275,11 @@ class XlsxToCsv
 					echo 'Sheet Name:' . $sheetName . PHP_EOL;
 				}
 				$i = $i2 = 0;
+				$sheet_count = 1;
 				$arr = $s_arr =  [];
+				if($this->divide == true && is_dir($newcsv)){
+				    $newcsv = $newcsv.$sheet_count.'.csv';
+				}
 				while (true) {
 					$row = $sheetData->nextRow();
 					if ($row === NULL) {
@@ -306,6 +317,7 @@ class XlsxToCsv
 						$arr = [];
 					}
 				}
+				$sheet_count++;
 			}
 		} catch (Exception $e) {
 			var_dump($e->getMessage());
